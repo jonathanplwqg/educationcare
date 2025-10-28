@@ -424,6 +424,47 @@ if predict_button:
         else:
             cluster_id = 5  # Fast but Disengaged
     
+    else:
+        # Full mode - use actual model (placeholder for now)
+        st.info("📍 Model loaded - Using ML predictions")
+        
+        # TODO: Add actual model prediction logic here when model files are available
+        # For now, fall back to demo mode logic
+        prediction_score = (
+            (avg_score / 100) * 0.4 +
+            (1 - engagement_cv) * 0.2 +
+            (activity_diversity) * 0.15 +
+            (1 if submission_timeliness <= 0 else 0) * 0.15 +
+            (1 if num_of_prev_attempts == 0 else 0) * 0.1
+        )
+        
+        if prediction_score >= 0.75:
+            predicted_outcome = "Distinction"
+            confidence = 0.85
+        elif prediction_score >= 0.55:
+            predicted_outcome = "Pass"
+            confidence = 0.78
+        elif prediction_score >= 0.30:
+            predicted_outcome = "Fail"
+            confidence = 0.72
+        else:
+            predicted_outcome = "Withdrawn"
+            confidence = 0.68
+        
+        # Assign cluster
+        if num_of_prev_attempts > 2:
+            cluster_id = 4
+        elif avg_score >= 80 and engagement_cv < 0.3:
+            cluster_id = 0
+        elif avg_score >= 60 and activity_count > 20:
+            cluster_id = 2
+        elif submission_timeliness > 10 or avg_score < 40:
+            cluster_id = 1
+        elif activity_count > 15 and submission_timeliness > 5:
+            cluster_id = 3
+        else:
+            cluster_id = 5
+    
     # Display prediction
     st.markdown("### 🎓 Predicted Outcome")
     
