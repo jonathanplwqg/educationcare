@@ -1,0 +1,12 @@
+{
+  "model_type": "RandomForestClassifier",
+  "n_features": 58,
+  "target_classes": [
+    "Pass",
+    "Fail",
+    "Distinction",
+    "Withdrawn"
+  ],
+  "created_date": "2025-10-28 17:22:43.507214",
+  "notebook": "Final.ipynb"
+}
