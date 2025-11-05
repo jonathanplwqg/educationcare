@@ -125,10 +125,10 @@ class ContentBasedStudyRecommender:
             # 🔍 CHECK FOR LIGHTGBM MODELS FIRST
             print("🔍 Checking for LightGBM models...")
             
-            # Look for potential LightGBM model files
+            # Look for potential LightGBM model files in models/ folder
             lightgbm_candidates = [
-                'best_lgb_model.pkl', 'lgb_model.pkl', 'lightgbm_model.pkl', 
-                'best_model.pkl', 'final_model.pkl', 'lgb_enhanced.pkl'
+                'models/best_lgb_model.pkl', 'models/lgb_model.pkl', 'models/lightgbm_model.pkl', 
+                'models/best_model.pkl', 'models/final_model.pkl', 'models/lgb_enhanced.pkl'
             ]
             
             for candidate in lightgbm_candidates:
@@ -153,8 +153,8 @@ class ContentBasedStudyRecommender:
             
             # Load Academic success model (if not already loaded as LightGBM)
             if not hasattr(self, 'academic_model') or self.academic_model is None:
-                if Path('model.pkl').exists():
-                    self.academic_model = joblib.load('model.pkl')
+                if Path('models/model.pkl').exists():
+                    self.academic_model = joblib.load('models/model.pkl')
                     model_type = type(self.academic_model).__name__
                     is_lgb = 'lightgbm' in str(type(self.academic_model).__module__).lower()
                     status = "🚀 LightGBM" if is_lgb else "🌳 RandomForest"
@@ -165,20 +165,20 @@ class ContentBasedStudyRecommender:
                         print("   Original training in Final.ipynb used LightGBM boosting")
                         print("   Consider retraining or finding LightGBM model files")
                 
-            if Path('scaler.pkl').exists():
-                self.academic_scaler = joblib.load('scaler.pkl')
+            if Path('models/scaler.pkl').exists():
+                self.academic_scaler = joblib.load('models/scaler.pkl')
                 print("✅ Loaded academic scaler")
                 
-            if Path('encoder.pkl').exists():
-                self.academic_encoder = joblib.load('encoder.pkl')
+            if Path('models/encoder.pkl').exists():
+                self.academic_encoder = joblib.load('models/encoder.pkl')
                 print("✅ Loaded academic encoder")
                 
-            if Path('target_encoder.pkl').exists():
-                self.target_encoder = joblib.load('target_encoder.pkl')
+            if Path('models/target_encoder.pkl').exists():
+                self.target_encoder = joblib.load('models/target_encoder.pkl')
                 print("✅ Loaded target encoder")
                 
-            if Path('feature_names.json').exists():
-                with open('feature_names.json', 'r') as f:
+            if Path('config/feature_names.json').exists():
+                with open('config/feature_names.json', 'r') as f:
                     self.feature_names = json.load(f)
                 print(f"✅ Loaded {len(self.feature_names)} feature names")
                 

@@ -1,17 +1,23 @@
-# 🎓 EducationCare Streamlit App - Setup Guide
+# 🎓 EducationCare LightFM Study Recommender - Setup Guide
 
 ## 📌 What Has Been Created
 
 I've created a complete Streamlit web application for your EducationCare student success prediction project. Here's what you have:
 
 ### Files Created:
-1. **app.py** - Main Streamlit application (650+ lines)
-2. **save_model.py** - Utility to save model artifacts
-3. **save_model_cell.py** - Notebook cell code for easy model saving
+1. **lightfm_study_recommender.py** - Main LightFM-based study recommendation app
+2. **notebooks/Final.ipynb** - Model training and feature engineering notebook
+3. **proficiency/** - English proficiency testing module
+   - `streamlit_english_test.py` - English proficiency test app
+   - `train_english_proficiency_model.ipynb` - Proficiency model training
+   - `english_proficiency_model.pkl` - Trained proficiency classifier
 4. **requirements.txt** - Python package dependencies
-5. **README_APP.md** - Complete app documentation
-6. **test_app.py** - Pre-flight check script
-7. **SETUP_INSTRUCTIONS.md** - This file
+5. **data/** - CSV datasets (7 files)
+6. **models/** - Trained ML models (5 .pkl files)
+7. **config/** - Configuration files (2 .json files)
+8. **docs/** - Documentation including this file
+9. **scripts/** - Utility scripts
+10. **utils/** - Utility functions
 
 ## 🎯 Features
 
@@ -79,7 +85,7 @@ The app collects comprehensive student information matching your project proposa
    - Confidence gauge
    - Risk assessment metrics
 
-## 🚀 Quick Start (3 Steps)
+## 🚀 Quick Start
 
 ### Step 1: Install Dependencies
 
@@ -96,6 +102,26 @@ This installs:
 - plotly (for visualizations)
 - xgboost, lightgbm
 - umap-learn
+
+### Step 1b: Choose Your App
+
+The project includes two Streamlit applications:
+
+1. **Study Recommender** (Main App)
+   ```bash
+   streamlit run lightfm_study_recommender.py
+   ```
+   - Predicts student outcomes
+   - Uses 58-feature LightGBM model
+   - Provides study recommendations
+
+2. **English Proficiency Test**
+   ```bash
+   streamlit run proficiency/streamlit_english_test.py
+   ```
+   - Tests English language proficiency
+   - Adaptive difficulty testing
+   - Provides detailed feedback
 
 ### Step 2: Save Your Model
 
@@ -140,23 +166,35 @@ print("✅ Model files saved!")
 ### Step 3: Run the App
 
 ```bash
-streamlit run app.py
+streamlit run lightfm_study_recommender.py
 ```
 
 The app will open automatically in your browser at `http://localhost:8501`
 
 ## 🧪 Testing (Optional)
 
-Run the test script first to verify everything is set up:
+Verify your folder structure:
 
 ```bash
-python test_app.py
+educationcare/
+├── lightfm_study_recommender.py  # Main study recommender app
+├── data/                          # CSV files (7 datasets)
+├── models/                        # ML models (5 .pkl files)
+├── config/                        # JSON configs (2 files)
+├── notebooks/                     # Final.ipynb
+├── proficiency/                   # English proficiency module
+│   ├── streamlit_english_test.py
+│   ├── train_english_proficiency_model.ipynb
+│   └── english_proficiency_model.pkl
+├── docs/                          # Documentation
+├── scripts/                       # Utility scripts
+└── utils/                         # Utility functions
 ```
 
 This checks:
 - ✅ All packages installed
-- ✅ Required files exist
-- ⚠️ Model files status (optional for demo mode)
+- ✅ Required folders exist (data/, models/, config/, proficiency/)
+- ✅ Model files present in models/ and proficiency/ folders
 
 ## 📖 How to Use the App
 
@@ -194,7 +232,7 @@ This checks:
 
 ### Change Colors/Styling
 
-Edit CSS in `app.py` (lines 14-43):
+Edit CSS in `lightfm_study_recommender.py`:
 
 ```python
 st.markdown("""
@@ -206,42 +244,29 @@ st.markdown("""
 """, unsafe_allow_html=True)
 ```
 
-### Modify Feedback Messages
+### Modify Model Parameters
 
-Edit feedback generation (lines 500-650 in `app.py`):
+Edit model loading and prediction sections:
 
 ```python
-if avg_score < 50:
-    improvements.append("📌 Your custom message here")
+# Load different models
+model = joblib.load('models/your_model.pkl')
+
+# Adjust prediction thresholds
+if prediction_proba > 0.75:
+    outcome = "High Success"
 ```
 
-### Add More Clusters
+### Update Feature Engineering
 
-Update `CLUSTER_INTERPRETATIONS` dictionary (lines 48-84):
-
-```python
-CLUSTER_INTERPRETATIONS = {
-    0: {
-        "name": "Your Cluster Name",
-        "description": "Description",
-        "risk_level": "Low/Medium/High",
-        "color": "success/warning/danger"
-    }
-}
-```
-
-### Change Form Inputs
-
-Modify sidebar section (lines 86-270):
+Modify the feature engineering pipeline in `notebooks/Final.ipynb` and re-save models:
 
 ```python
-# Add new input
-new_field = st.number_input(
-    "Your Field Name",
-    min_value=0,
-    max_value=100,
-    help="Help text here"
-)
+# Add new features
+df['new_feature'] = calculate_new_metric(df)
+
+# Retrain and save
+joblib.dump(model, '../models/model.pkl')
 ```
 
 ## 🔧 Troubleshooting
@@ -261,7 +286,7 @@ pip install -r requirements.txt
 **Solution:** Check you're in correct directory
 ```bash
 cd /path/to/educationcare
-streamlit run app.py
+streamlit run lightfm_study_recommender.py
 ```
 
 ### Problem: Import errors in app
@@ -338,9 +363,11 @@ This app aligns with your project proposal:
 - [Deployment Guide](https://docs.streamlit.io/streamlit-community-cloud/get-started)
 
 ### Your Project Files:
-- `Final.ipynb` - Model training
-- `app.py` - Streamlit app
-- `README_APP.md` - Detailed documentation
+- `notebooks/Final.ipynb` - Model training and feature engineering
+- `lightfm_study_recommender.py` - Main Streamlit app
+- `docs/` - All documentation files
+- `models/` - Trained models and artifacts
+- `data/` - Source CSV datasets
 
 ## 💡 Tips
 
@@ -387,7 +414,7 @@ You now have a fully functional Streamlit app for your EducationCare project!
 
 **Ready to run:**
 ```bash
-streamlit run app.py
+streamlit run lightfm_study_recommender.py
 ```
 
 Good luck with your project! 🚀

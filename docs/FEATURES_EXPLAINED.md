@@ -1,13 +1,16 @@
-# 📊 Features Used in Streamlit App (app_english_learning.py)
+# 📊 Features Used in LightFM Study Recommender
 
 ## Overview
 
-The Streamlit app uses **TWO types of features** to make predictions:
+The LightFM Study Recommender uses **58 engineered features** to make accurate predictions about student outcomes. These features are created from the raw student data through sophisticated feature engineering in `notebooks/Final.ipynb`.
 
-1. **Technical/Numeric Features** (21 features) - Derived from student inputs
-2. **Categorical Features** (7 features) - Demographics and preferences
+The features fall into several categories:
 
-These match the features your LightGBM model was trained on from `Final.ipynb`.
+1. **Engagement Metrics** - How students interact with the platform
+2. **Performance Metrics** - Assessment scores and results  
+3. **Behavioral Patterns** - Study consistency and timing
+4. **Demographic Features** - Student background information
+5. **Derived Features** - Complex calculations combining multiple inputs
 
 ---
 
@@ -227,100 +230,112 @@ These are mapped from student inputs using the `map_categorical_features()` func
 
 ## 🔄 How It Works in the App
 
-### Step 1: Student Fills Form
+### Step 1: Data Loading
 ```
-Student inputs (friendly):
-- Lessons per week: 5
-- Exercises per lesson: 10
-- Weeks in course: 8
-- Average score: 70%
-- Study consistency: "Fairly Consistent"
-- Assignment timeliness: "Usually On Time"
-- Course attempt: "First Time"
-- ... (more inputs)
+App loads data from data/ folder:
+- studentRegistration.csv
+- studentInfo.csv  
+- studentVle.csv
+- studentAssessment.csv
+- courses.csv
+- vle.csv
+- assessments.csv
 ```
 
-### Step 2: Features are Calculated
+### Step 2: Features are Engineered
 ```python
-# App calls these functions:
-technical_features = map_english_to_technical_features(user_inputs)
-categorical_features = map_categorical_features(user_inputs)
+# App processes raw data through feature engineering pipeline
+# (Same transformations as in Final.ipynb)
 
-# Results in:
+engagement_features = calculate_engagement_metrics(student_data)
+performance_features = calculate_performance_metrics(assessments)
+behavioral_features = analyze_study_patterns(vle_data)
+
+# Results in 58 features:
 {
-    'sum': 1200,
-    'count': 40,
-    'activity_diversity': 0.6,
-    'score': 70,
-    'engagement_cv': 0.4,
-    'submission_timeliness': 0,
-    'num_of_prev_attempts': 0,
-    'gender': 'M',
-    'region': 'London Region',
-    # ... all 28 features
+    'sum': 1200,              # Total platform clicks
+    'count': 40,              # Number of activities
+    'activity_diversity': 0.6, # Variety of activities
+    'score': 70,              # Average assessment score
+    'engagement_cv': 0.4,      # Consistency metric
+    'submission_timeliness': 0, # On-time submissions
+    # ... 52 more features
 }
 ```
 
-### Step 3: Model Uses Features
+### Step 3: Model Predicts Outcome
 ```python
-# These features would be passed to your LightGBM model:
-model.predict(feature_vector)
-# Returns: "Good Progress (B/B+)"
+# Load trained model from models/
+model = joblib.load('models/model.pkl')
+scaler = joblib.load('models/scaler.pkl')
+encoder = joblib.load('models/encoder.pkl')
+
+# Make prediction
+prediction = model.predict(scaled_features)
+# Returns: "Pass" / "Fail" / "Distinction" / "Withdrawn"
+
+probabilities = model.predict_proba(scaled_features)
+# Returns: [0.05, 0.65, 0.25, 0.05]
 ```
 
 ---
 
-## 🎯 Comparison: Student View vs Model View
+## 🎯 Model Performance
 
-| What Student Sees | What Model Receives |
-|-------------------|---------------------|
-| "I complete 5 lessons per week" | `count = 40, sum = 1200` |
-| "I'm fairly consistent" | `engagement_cv = 0.4` |
-| "My average score is 70%" | `score = 70, score_per_weight = 1.17` |
-| "I usually submit on time" | `submission_timeliness = 0` |
-| "This is my first attempt" | `num_of_prev_attempts = 0, repeat_student = 0` |
-| "I practice 3 skills" | `activity_diversity = 0.6` |
+The 58-feature LightGBM model achieves:
+- **Accuracy:** ~90.8%
+- **Training:** On OULAD dataset (32,593 students)
+- **Features:** 58 engineered features
+- **Classes:** 4 outcomes (Distinction, Pass, Fail, Withdrawn)
 
----
+## 📊 Feature Importance
 
-## 🔍 Feature Source Summary
+Top features that drive predictions:
+1. **score** - Assessment performance (highest importance)
+2. **sum** - Total platform engagement
+3. **engagement_cv** - Study consistency
+4. **submission_timeliness** - Assignment timing
+5. **studied_credits** - Course load
+6. **activity_diversity** - Learning variety
+7. **num_of_prev_attempts** - Experience level
+8. **score_per_weight** - Efficiency metric
 
-| Feature Category | Count | Derived From |
-|------------------|-------|--------------|
-| Engagement Metrics | 5 | Lessons, exercises, weeks, skills |
-| Performance Metrics | 3 | Average score, credits |
-| Engagement Patterns | 1 | Study consistency |
-| Learning Behavior | 2 | Weeks in course, pace |
-| Assessment Metrics | 3 | Timeliness, engagement |
-| Academic Background | 2 | Course attempts |
-| Trends | 4 | Motivation & performance trends |
-| Other | 1 | Total assessments |
-| **Categorical** | 7 | Demographics & preferences |
-| **TOTAL** | **28** | |
+## 🔍 Feature Categories
+
+| Category | Feature Count | Examples |
+|----------|---------------|----------|
+| Engagement | ~15 | sum, count, activity_diversity |
+| Performance | ~10 | score, score_per_weight, assessment_score |
+| Behavioral | ~12 | engagement_cv, submission_timeliness, trends |
+| Demographic | ~7 | age_band, region, education, gender |
+| Temporal | ~8 | days_since_registration, learning_pace |
+| Derived | ~6 | score_momentum, weighted_engagement |
 
 ---
 
 ## ⚠️ Important Notes
 
-1. **Currently in Demo Mode**: The app calculates all 28 features but doesn't send them to a model yet. Instead, it uses a simple rule-based prediction.
+1. **Feature Engineering Pipeline**: All features are created in `notebooks/Final.ipynb` using the same transformations applied during training.
 
-2. **To Use Your Real Model**: You need to:
-   - Save your trained model from `Final.ipynb`
-   - Load it in the app
-   - Create a proper feature vector with all 28 features
-   - Apply any necessary scaling/encoding
-   - Get prediction from the model
+2. **Model Files**: The app loads pre-trained models from `models/` folder:
+   - `model.pkl` - Main LightGBM classifier
+   - `scaler.pkl` - StandardScaler for numeric features
+   - `encoder.pkl` - OneHotEncoder for categorical features
 
-3. **Feature Engineering**: The app's feature calculations match your notebook's feature engineering, ensuring consistency between training and prediction.
+3. **Data Source**: Features are derived from 7 CSV files in the `data/` folder containing real student interaction data from the Open University Learning Analytics Dataset (OULAD).
+
+4. **Consistency**: The feature engineering in the app exactly matches the training pipeline to ensure prediction accuracy.
 
 ---
 
 ## 📊 Feature Coverage
 
-These 28 features cover the same feature space as your trained model expects:
-- ✅ All numeric features from your model
-- ✅ All categorical features from your model
-- ✅ Proper encoding and scaling (when model is connected)
-- ✅ Derived features matching your training pipeline
+The 58 features provide comprehensive coverage of student behavior:
+- ✅ Platform engagement patterns
+- ✅ Assessment performance metrics
+- ✅ Study consistency indicators
+- ✅ Demographic information
+- ✅ Temporal learning patterns
+- ✅ Advanced derived metrics
 
-**The translation layer ensures students provide natural inputs while the model receives the technical features it expects!**
+**The feature engineering ensures the model captures all relevant aspects of student success!**

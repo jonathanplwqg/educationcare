@@ -10,33 +10,31 @@
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│              STREAMLIT INTERFACE (app_english_learning.py)       │
+│         STREAMLIT INTERFACE (lightfm_study_recommender.py)       │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │  Sidebar: Student-Friendly Input Form                     │  │
-│  │  - How many lessons per week? (slider: 0-30)             │  │
-│  │  - How consistent is your study? (dropdown)              │  │
-│  │  - What's your average score? (slider: 0-100%)           │  │
-│  │  - Which skills do you practice? (multi-select)          │  │
+│  │  Sidebar: Student Profile Input Form                      │  │
+│  │  - Demographics (age, region, education)                 │  │
+│  │  - Study patterns and engagement metrics                 │  │
+│  │  - Performance indicators                                │  │
+│  │  - Learning preferences                                   │  │
 │  └──────────────────────────────────────────────────────────┘  │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                  TRANSLATION LAYER                               │
-│  map_english_to_technical_features()                            │
+│                  FEATURE ENGINEERING                             │
+│  Process student data through engineered features               │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │  lessons_per_week (5) → count, sum                        │  │
-│  │  study_consistency → engagement_cv                        │  │
-│  │  average_score (70%) → score, score_per_weight           │  │
-│  │  skills_practiced → activity_diversity                    │  │
-│  │  primary_method → activity_type                           │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                                                                  │
-│  map_categorical_features()                                     │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  region (Asia) → East Anglian Region                     │  │
-│  │  education → highest_education                            │  │
-│  │  age_group → age_band                                     │  │
+│  │  Engagement Metrics                                       │  │
+│  │  - activity_count, sum_clicks, engagement_cv             │  │
+│  │  - activity_diversity, weighted_engagement               │  │
+│  │                                                            │  │
+│  │  Performance Metrics                                      │  │
+│  │  - score, score_per_weight, assessment_engagement        │  │
+│  │                                                            │  │
+│  │  Behavioral Patterns                                      │  │
+│  │  - submission_timeliness, learning_pace                  │  │
+│  │  - engagement_trend, score_momentum                      │  │
 │  └──────────────────────────────────────────────────────────┘  │
 └─────────────────────┬───────────────────────────────────────────┘
                       │
@@ -121,91 +119,87 @@
 ## Component Details
 
 ### 1. Input Layer (Student Interface)
-**File:** `app_english_learning.py` (lines 200-450)
-**Purpose:** Collect natural student inputs
+**File:** `lightfm_study_recommender.py`
+**Purpose:** Collect comprehensive student profile data
 **Key Features:**
-- Sliders, dropdowns, multi-select for easy input
-- Grouped by category (Study Habits, Performance, etc.)
-- Tooltips for clarity
+- Demographic information (age, region, education, etc.)
+- Study behavior metrics (engagement, consistency)
+- Performance indicators (scores, assessments)
+- Learning preferences and patterns
 
-### 2. Translation Layer
-**File:** `app_english_learning.py` (lines 100-180)
+### 2. Feature Engineering Layer
+**File:** `lightfm_study_recommender.py` + `notebooks/Final.ipynb`
 **Functions:**
-- `map_english_to_technical_features()` - Converts learning activities to metrics
-- `map_categorical_features()` - Maps demographics to model categories
+- Calculates 58+ features from raw inputs
+- Combines engagement, performance, and behavioral metrics
+- Applies domain knowledge from educational data science
 
-**Key Mappings:**
+**Key Transformations:**
 ```python
-# Study activity → Engagement metrics
-total_clicks = lessons * exercises * weeks * 3
-activity_count = lessons * weeks
-engagement_cv = consistency_score
+# Engagement metrics
+total_engagement = sum_clicks × engagement_quality
+activity_diversity = unique_activities / total_possible
 
-# Performance → Assessment metrics
-score = average_lesson_score
-submission_timeliness = timeliness_mapping[student_input]
+# Performance metrics
+normalized_score = score / weight
+assessment_efficiency = score / time_taken
+
+# Behavioral patterns
+consistency_score = 1 - engagement_coefficient_of_variation
+learning_velocity = credits_earned / days_active
 ```
 
 ### 3. ML Model Layer
-**File:** `model.pkl` (saved from `Final.ipynb`)
-**Type:** LightGBM Classifier
-**Input:** 58 features (20 numeric + 38 categorical)
+**Files:** `models/model.pkl`, `models/scaler.pkl`, `models/encoder.pkl`
+**Type:** LightGBM Classifier (58-feature model)
+**Input:** 58 engineered features (numeric + encoded categorical)
 **Output:** 4-class prediction (Distinction/Pass/Fail/Withdrawn)
-**Note:** Currently in demo mode; can be connected
+**Accuracy:** ~90.8% on test data
 
-### 4. Feedback Engine
-**File:** `app_english_learning.py` (lines 600-900)
+### 4. Prediction & Recommendation Engine
+**File:** `lightfm_study_recommender.py`
 **Components:**
 
-**A. Risk Assessment**
+**A. Outcome Prediction**
 ```python
-risk_factors = 0
-if previous_attempts > 0: risk_factors += 1
-if avg_score < 50: risk_factors += 1
-if late_submissions: risk_factors += 1
-if inconsistent_study: risk_factors += 1
-if low_practice: risk_factors += 1
+# Load models from models/ folder
+model = joblib.load('models/model.pkl')
+scaler = joblib.load('models/scaler.pkl')
+encoder = joblib.load('models/encoder.pkl')
+
+# Make prediction
+prediction = model.predict(features)
+probabilities = model.predict_proba(features)
 ```
 
-**B. Persona Assignment**
+**B. Study Recommendations**
 ```python
-6 learner personas based on:
-- Previous attempts
-- Score levels
-- Engagement consistency
-- Practice frequency
+# Based on student profile and prediction
+recommendations = generate_study_plan(
+    student_profile=profile,
+    predicted_outcome=prediction,
+    weak_areas=identified_gaps
+)
 ```
 
-**C. Feedback Generation**
+**C. Personalized Insights**
 ```python
-FOR each potential issue:
-    IF condition_met:
-        ADD specific feedback with:
-            - Problem identification
-            - Targeted tips (4-6 items)
-            - Related resources
-```
-
-**D. Action Plan**
-```python
-persona_based_plans = {
-    0: ["Continue excellence", "Challenge yourself"],
-    1: ["Urgent intervention", "Basic mastery"],
-    2: ["Maintain consistency", "Optimize"],
-    3: ["Quality over quantity", "Review"],
-    4: ["New strategy", "Get help"],
-    5: ["Slow down", "Deep learning"]
+insights = {
+    'strengths': analyze_strong_features(profile),
+    'focus_areas': identify_improvement_areas(profile),
+    'action_steps': create_action_plan(profile, prediction),
+    'resources': recommend_materials(weak_areas)
 }
 ```
 
 ### 5. Display Layer
-**File:** `app_english_learning.py` (lines 500-900)
+**File:** `lightfm_study_recommender.py`
 **Components:**
-- Profile Summary (metrics cards)
-- Quick Assessment (risk indicators)
-- Prediction Box (outcome + confidence)
-- Persona Card (learner type)
-- 4-Tab Feedback System
+- Student Profile Summary
+- Prediction Display (outcome + confidence)
+- Feature Importance Visualization
+- Personalized Recommendations
+- Study Plan and Resources
 
 ## Data Flow Example
 
@@ -253,37 +247,77 @@ resources = ["BBC Learning English", "Duolingo"]
 ## Technology Stack
 
 ```
-Frontend:  Streamlit 1.50.0
-           - Forms, widgets, layouts
-           - Plotly for visualizations
+Frontend:  Streamlit 1.30+
+           - Interactive forms and widgets
+           - Real-time predictions
+           - Plotly visualizations
            
 Backend:   Python 3.12
-           - Feature engineering
-           - Rule-based feedback
+           - Feature engineering pipeline
+           - ML model inference
+           - Recommendation generation
            
-ML Model:  LightGBM (from Final.ipynb)
-           - 58 features
+ML Stack:  LightGBM Classifier
+           - 58 engineered features
            - 4-class classification
+           - ~90.8% accuracy
+           
+           Scikit-learn
+           - StandardScaler for normalization
+           - OneHotEncoder for categoricals
+           - Model persistence
            
 Data:      Pandas DataFrames
+           - CSV data loading from data/
            - Feature transformation
            - Result formatting
+
+Models:    Joblib persistence
+           - model.pkl (LightGBM)
+           - scaler.pkl (StandardScaler)
+           - encoder.pkl (OneHotEncoder)
+           - Additional models in models/
 ```
 
 ## File Structure
 
 ```
 educationcare/
-├── app_english_learning.py      # Main application (NEW)
-├── app.py                        # Original technical version
-├── Final.ipynb                   # Model training notebook
-├── model.pkl                     # Trained model (optional)
-├── scaler.pkl                    # Feature scaler (optional)
-├── encoder.pkl                   # Categorical encoder (optional)
-├── ENGLISH_LEARNING_GUIDE.md    # Documentation (NEW)
-├── PROJECT_SUMMARY.md            # Summary (NEW)
-├── ARCHITECTURE.md               # This file (NEW)
-└── requirements.txt              # Dependencies
+├── lightfm_study_recommender.py  # Main Streamlit application
+├── notebooks/
+│   └── Final.ipynb                # Model training & feature engineering
+├── data/                          # Source datasets (7 CSV files)
+│   ├── studentRegistration.csv
+│   ├── studentInfo.csv
+│   ├── studentVle.csv
+│   ├── studentAssessment.csv
+│   ├── courses.csv
+│   ├── vle.csv
+│   └── assessments.csv
+├── models/                        # Trained models (5 .pkl files)
+│   ├── model.pkl                  # Main LightGBM 58-feature model
+│   ├── scaler.pkl                 # StandardScaler for features
+│   ├── encoder.pkl                # OneHotEncoder for categoricals
+│   ├── target_encoder.pkl         # LabelEncoder for targets
+│   └── umap_reducer.pkl           # UMAP dimensionality reduction
+├── config/                        # Configuration files
+│   ├── feature_names.json         # Feature list
+│   └── metadata.json              # Model metadata
+├── proficiency/                   # English proficiency testing module
+│   ├── streamlit_english_test.py  # English test Streamlit app
+│   ├── train_english_proficiency_model.ipynb  # Training notebook
+│   └── english_proficiency_model.pkl  # Trained model
+├── docs/                          # Documentation
+│   ├── ARCHITECTURE.md            # This file
+│   ├── FEATURES_EXPLAINED.md      # Feature documentation
+│   ├── PROJECT_SUMMARY.md         # Project overview
+│   └── SETUP_INSTRUCTIONS.md      # Setup guide
+├── scripts/                       # Utility scripts
+│   ├── quick_start.py
+│   └── save_model.py
+├── utils/                         # Utility functions
+├── requirements.txt               # Python dependencies
+└── README.md                      # Main documentation
 ```
 
 ## Future Architecture Enhancements

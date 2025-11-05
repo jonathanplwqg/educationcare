@@ -105,18 +105,23 @@ streamlit run lightfm_study_recommender.py
 Ensure these files are in your project directory:
 
 ```
-📁 Project Root/
-├── model.pkl                    # LightGBM academic success model (58 features)
-├── scaler.pkl                   # Feature scaler
-├── encoder.pkl                  # Categorical encoder
-├── target_encoder.pkl           # Target variable encoder
-├── feature_names.json           # List of 58 feature names
-├── proficiency/
-│   └── english_proficiency_model.pkl  # English proficiency model (4 features)
-└── lightfm_study_recommender.py       # Main application
+📁 EducationCare/
+├── lightfm_study_recommender.py       # Main application ⭐
+│
+├── 📁 models/                         # Trained ML models
+│   ├── model.pkl                      # LightGBM academic model (58 features)
+│   ├── scaler.pkl                     # Feature scaler
+│   ├── encoder.pkl                    # Categorical encoder
+│   └── target_encoder.pkl             # Target encoder
+│
+├── 📁 config/                         # Configuration
+│   └── feature_names.json             # List of 58 feature names
+│
+└── 📁 proficiency/                    # External folder (sibling directory)
+    └── english_proficiency_model.pkl  # English model (4 features)
 ```
 
-> **💡 Model Generation:** These files are generated from `Final.ipynb` (see [ML Model Integration](#-ml-model-integration))
+> **💡 Model Generation:** These files are generated from `notebooks/Final.ipynb` (see [ML Model Integration](#-ml-model-integration))
 
 ---
 
@@ -347,19 +352,49 @@ def get_recommendations(self, user_profile, top_k=6):
 
 ```
 📁 EducationCare/
-├── 🎯 lightfm_study_recommender.py     # Main application (1,720 lines)
-├── 📊 Final.ipynb                      # Model training notebook
-├── 🔧 model.pkl                        # LightGBM academic model (58 features)
-├── ⚙️ scaler.pkl                       # Feature scaler
-├── 🏷️ encoder.pkl                      # Categorical encoder
-├── 🎯 target_encoder.pkl               # Target encoder
-├── 📋 feature_names.json               # 58 feature names list
-├── 📁 proficiency/
-│   └── 🇬🇧 english_proficiency_model.pkl  # English model (4 features)
-│   └── 🇬🇧 train_english_proficiency_model.ipynb #Model training notebook
-├── 📄 requirements_comprehensive.txt    # Dependencies
+├── 🎯 lightfm_study_recommender.py     # Main Streamlit application ⭐
+├── 📋 requirements.txt                 # Core dependencies
+├── � requirements_comprehensive.txt   # Extended dependencies
 ├── 📖 README.md                        # This file
-├── 🚀 quick_start.py                   # Setup script
+├── 📄 QUICK_START.md                   # Quick start guide
+├── 📄 ORGANIZATION_SUMMARY.md          # Project organization details
+│
+├── 📁 data/                            # Training data (CSV files)
+│   ├── assessments.csv
+│   ├── courses.csv
+│   ├── studentAssessment.csv
+│   ├── studentInfo.csv
+│   ├── studentRegistration.csv
+│   ├── studentVle.csv
+│   └── vle.csv
+│
+├── � models/                          # Trained ML models
+│   ├── 🔧 model.pkl                    # LightGBM academic model (58 features)
+│   ├── ⚙️ scaler.pkl                   # Feature scaler
+│   ├── 🏷️ encoder.pkl                  # Categorical encoder
+│   ├── 🎯 target_encoder.pkl           # Target encoder
+│   └── 🔄 umap_reducer.pkl             # UMAP dimensionality reducer
+│
+├── � config/                          # Configuration files
+│   ├── �📋 feature_names.json           # 58 feature names list
+│   └── � metadata.json                # Model metadata
+│
+├── 📁 notebooks/                       # Jupyter notebooks
+│   └── 📊 Final.ipynb                  # Model training & analysis
+│
+├── 📁 scripts/                         # Utility scripts
+│   ├── � quick_start.py               # Setup helper
+│   └── 💾 save_model.py                # Model export utilities
+│
+├── � docs/                            # Documentation
+│   ├── ARCHITECTURE.md
+│   ├── FEATURES_EXPLAINED.md
+│   ├── PROJECT_SUMMARY.md
+│   └── SETUP_INSTRUCTIONS.md
+│
+└── � proficiency/                     # English proficiency model (external)
+    ├── 🇬🇧 english_proficiency_model.pkl
+    └── 📓 train_english_proficiency_model.ipynb
 
 ```
 
@@ -368,8 +403,8 @@ def get_recommendations(self, user_profile, top_k=6):
 | File                                        | Purpose                          | Generated From               |
 | ------------------------------------------- | -------------------------------- | ---------------------------- |
 | `lightfm_study_recommender.py`              | Main Streamlit application       | Hand-coded                   |
-| `model.pkl`                                 | Academic success LightGBM model  | Final.ipynb (Cell 80)        |
-| `feature_names.json`                        | List of 58 model features        | Final.ipynb feature analysis |
+| `models/model.pkl`                          | Academic success LightGBM model  | notebooks/Final.ipynb        |
+| `config/feature_names.json`                 | List of 58 model features        | notebooks/Final.ipynb        |
 | `proficiency/english_proficiency_model.pkl` | English proficiency RandomForest | Separate training            |
 
 ---
