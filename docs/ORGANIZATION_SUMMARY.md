@@ -6,7 +6,7 @@
 
 ```
 educationcare/
-├── lightfm_study_recommender.py  # Main Streamlit app ⭐
+├── lightfm_study_recommender.py  # Main Streamlit app 
 ├── requirements.txt
 ├── requirements_comprehensive.txt
 │
@@ -16,7 +16,9 @@ educationcare/
 │   ├── studentAssessment.csv
 │   ├── studentInfo.csv
 │   ├── studentRegistration.csv
+│   ├── studentVle.csv
 │   └── vle.csv
+    
 │
 ├── models/                   # ✅ Saved models (will be created by notebook)
 │   ├── model.pkl
