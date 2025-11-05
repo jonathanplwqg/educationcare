@@ -357,7 +357,6 @@ def get_recommendations(self, user_profile, top_k=6):
 ├── � requirements_comprehensive.txt   # Extended dependencies
 ├── 📖 README.md                        # This file
 ├── 📄 QUICK_START.md                   # Quick start guide
-├── 📄 ORGANIZATION_SUMMARY.md          # Project organization details
 │
 ├── 📁 data/                            # Training data (CSV files)
 │   ├── assessments.csv
