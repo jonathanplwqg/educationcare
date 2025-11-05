@@ -17,8 +17,7 @@ educationcare/
 │   ├── studentInfo.csv
 │   ├── studentRegistration.csv
 │   ├── studentVle.csv
-│   └── vle.csv
-    
+│   └── vle.csv  
 │
 ├── models/                   # ✅ Saved models (will be created by notebook)
 │   ├── model.pkl
