@@ -6,3 +6,4 @@ plotly>=5.17.0
 xgboost>=2.0.0
 lightgbm>=4.1.0
 umap-learn>=0.5.4
+# lightfm>=1.17  # Currently not compatible with Python 3.12 - using fallback recommendations
