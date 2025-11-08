@@ -1,23 +1,24 @@
-# 🎓 EducationCare LightFM Study Recommender - Setup Guide
+# 🎓 EducationCare Study Recommender - Setup Guide
 
 ## 📌 What Has Been Created
 
 I've created a complete Streamlit web application for your EducationCare student success prediction project. Here's what you have:
 
 ### Files Created:
-1. **lightfm_study_recommender.py** - Main LightFM-based study recommendation app
-2. **notebooks/Final.ipynb** - Model training and feature engineering notebook
-3. **proficiency/** - English proficiency testing module
+1. **recommender_app.py** - Main study recommendation app with ML + LightFM ⭐
+2. **lightfm_integration.py** - LightFM collaborative filtering integration
+3. **categorical_mapping_utils.py** - Utilities for encoding categorical inputs
+4. **notebooks/Final.ipynb** - Model training and feature engineering notebook
+5. **proficiency/** - English proficiency testing module
    - `streamlit_english_test.py` - English proficiency test app
    - `train_english_proficiency_model.ipynb` - Proficiency model training
    - `english_proficiency_model.pkl` - Trained proficiency classifier
-4. **requirements.txt** - Python package dependencies
-5. **data/** - CSV datasets (7 files)
-6. **models/** - Trained ML models (5 .pkl files)
-7. **config/** - Configuration files (2 .json files)
-8. **docs/** - Documentation including this file
-9. **scripts/** - Utility scripts
-10. **utils/** - Utility functions
+6. **requirements.txt** - Python package dependencies
+7. **data/** - CSV datasets (7 files, includes studentInfo.csv for mapping)
+8. **models/** - Trained ML models (5 .pkl files)
+9. **config/** - Configuration files (2 .json files)
+10. **docs/** - Documentation including this file
+11. **scripts/** - Utility scripts
 
 ## 🎯 Features
 
@@ -109,7 +110,7 @@ The project includes two Streamlit applications:
 
 1. **Study Recommender** (Main App)
    ```bash
-   streamlit run lightfm_study_recommender.py
+   streamlit run recommender_app.py
    ```
    - Predicts student outcomes
    - Uses 58-feature LightGBM model
@@ -166,7 +167,7 @@ print("✅ Model files saved!")
 ### Step 3: Run the App
 
 ```bash
-streamlit run lightfm_study_recommender.py
+streamlit run recommender_app.py
 ```
 
 The app will open automatically in your browser at `http://localhost:8501`
@@ -177,18 +178,20 @@ Verify your folder structure:
 
 ```bash
 educationcare/
-├── lightfm_study_recommender.py  # Main study recommender app
-├── data/                          # CSV files (7 datasets)
-├── models/                        # ML models (5 .pkl files)
-├── config/                        # JSON configs (2 files)
-├── notebooks/                     # Final.ipynb
-├── proficiency/                   # English proficiency module
+├── recommender_app.py                 # Main study recommender app ⭐
+├── lightfm_integration.py             # LightFM collaborative filtering
+├── categorical_mapping_utils.py       # Category encoding utilities
+├── data/                              # CSV files (7 datasets)
+│   └── studentInfo.csv                # Required for categorical mapping
+├── models/                            # ML models (5 .pkl files)
+├── config/                            # JSON configs (2 files)
+├── notebooks/                         # Final.ipynb
+├── proficiency/                       # English proficiency module
 │   ├── streamlit_english_test.py
 │   ├── train_english_proficiency_model.ipynb
 │   └── english_proficiency_model.pkl
-├── docs/                          # Documentation
-├── scripts/                       # Utility scripts
-└── utils/                         # Utility functions
+├── docs/                              # Documentation
+└── scripts/                           # Utility scripts
 ```
 
 This checks:
@@ -232,7 +235,7 @@ This checks:
 
 ### Change Colors/Styling
 
-Edit CSS in `lightfm_study_recommender.py`:
+Edit CSS in `recommender_app.py`:
 
 ```python
 st.markdown("""
@@ -286,7 +289,7 @@ pip install -r requirements.txt
 **Solution:** Check you're in correct directory
 ```bash
 cd /path/to/educationcare
-streamlit run lightfm_study_recommender.py
+streamlit run recommender_app.py
 ```
 
 ### Problem: Import errors in app
@@ -364,7 +367,7 @@ This app aligns with your project proposal:
 
 ### Your Project Files:
 - `notebooks/Final.ipynb` - Model training and feature engineering
-- `lightfm_study_recommender.py` - Main Streamlit app
+- `recommender_app.py` - Main Streamlit app
 - `docs/` - All documentation files
 - `models/` - Trained models and artifacts
 - `data/` - Source CSV datasets
@@ -414,7 +417,7 @@ You now have a fully functional Streamlit app for your EducationCare project!
 
 **Ready to run:**
 ```bash
-streamlit run lightfm_study_recommender.py
+streamlit run recommender_app.py
 ```
 
 Good luck with your project! 🚀

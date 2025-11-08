@@ -65,7 +65,7 @@ Students receive:
 cd /path/to/educationcare
 
 # Run the study recommender app
-streamlit run lightfm_study_recommender.py
+streamlit run recommender_app.py
 ```
 
 Then open: http://localhost:8501
@@ -95,18 +95,19 @@ code proficiency/train_english_proficiency_model.ipynb
 
 ### Core Files
 
-1. **`lightfm_study_recommender.py`** - Main study recommender Streamlit app
-2. **`notebooks/Final.ipynb`** - Model training and feature engineering
-3. **`data/`** - Source datasets (OULAD data)
-4. **`models/`** - Trained ML models and artifacts
-5. **`config/`** - Feature names and metadata
-6. **`proficiency/`** - English proficiency testing module
+1. **`recommender_app.py`** - Main study recommender Streamlit app ⭐
+2. **`lightfm_integration.py`** - LightFM collaborative filtering module
+3. **`categorical_mapping_utils.py`** - Category encoding utilities for ML models
+4. **`notebooks/Final.ipynb`** - Model training and feature engineering
+5. **`data/`** - Source datasets (OULAD data, includes studentInfo.csv for mapping)
+6. **`models/`** - Trained ML models and artifacts
+7. **`config/`** - Feature names and metadata
+8. **`proficiency/`** - English proficiency testing module
    - `streamlit_english_test.py` - English test app
    - `train_english_proficiency_model.ipynb` - Proficiency model training
    - `english_proficiency_model.pkl` - Trained proficiency model
-7. **`docs/`** - Comprehensive documentation
-8. **`scripts/`** - Utility scripts
-9. **`utils/`** - Utility functions
+9. **`docs/`** - Comprehensive documentation
+10. **`scripts/`** - Utility scripts
 
 ### Documentation
 
@@ -288,7 +289,7 @@ The system provides:
 
 **Run the study recommender:**
 ```bash
-streamlit run lightfm_study_recommender.py
+streamlit run recommender_app.py
 ```
 
 **Run the English proficiency test:**

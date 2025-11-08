@@ -95,7 +95,7 @@ pip install -r requirements_comprehensive.txt
 
 ```bash
 # Start the Streamlit app
-streamlit run lightfm_study_recommender.py
+streamlit run recommender_app.py
 ```
 
 **The app will open at:** `http://localhost:8501`
@@ -106,7 +106,9 @@ Ensure these files are in your project directory:
 
 ```
 📁 EducationCare/
-├── lightfm_study_recommender.py       # Main application ⭐
+├── recommender_app.py                 # Main application ⭐
+├── lightfm_integration.py             # LightFM collaborative filtering
+├── categorical_mapping_utils.py       # Category encoding utilities
 │
 ├── 📁 models/                         # Trained ML models
 │   ├── model.pkl                      # LightGBM academic model (58 features)
@@ -117,7 +119,11 @@ Ensure these files are in your project directory:
 ├── 📁 config/                         # Configuration
 │   └── feature_names.json             # List of 58 feature names
 │
-└── 📁 proficiency/                    # External folder (sibling directory)
+├── 📁 data/                           # Training datasets
+│   ├── studentInfo.csv                # Required for categorical mapping
+│   └── ...other CSV files
+│
+└── 📁 proficiency/                    # English proficiency module
     └── english_proficiency_model.pkl  # English model (4 features)
 ```
 
@@ -352,9 +358,11 @@ def get_recommendations(self, user_profile, top_k=6):
 
 ```
 📁 EducationCare/
-├── 🎯 lightfm_study_recommender.py     # Main Streamlit application ⭐
+├── 🎯 recommender_app.py               # Main Streamlit application ⭐
+├── 🤝 lightfm_integration.py           # LightFM collaborative filtering
+├── 🏷️ categorical_mapping_utils.py    # Category encoding utilities
 ├── 📋 requirements.txt                 # Core dependencies
-├── � requirements_comprehensive.txt   # Extended dependencies
+├── 📝 requirements_comprehensive.txt   # Extended dependencies
 ├── 📖 README.md                        # This file
 ├── 📄 QUICK_START.md                   # Quick start guide
 │
@@ -401,7 +409,7 @@ def get_recommendations(self, user_profile, top_k=6):
 
 | File                                        | Purpose                          | Generated From               |
 | ------------------------------------------- | -------------------------------- | ---------------------------- |
-| `lightfm_study_recommender.py`              | Main Streamlit application       | Hand-coded                   |
+| `recommender_app.py`              | Main Streamlit application       | Hand-coded                   |
 | `models/model.pkl`                          | Academic success LightGBM model  | notebooks/Final.ipynb        |
 | `config/feature_names.json`                 | List of 58 model features        | notebooks/Final.ipynb        |
 | `proficiency/english_proficiency_model.pkl` | English proficiency RandomForest | Separate training            |
@@ -434,7 +442,7 @@ def get_recommendations(self, user_profile, top_k=6):
 
 4. **Start Development Server**
    ```bash
-   streamlit run lightfm_study_recommender.py
+   streamlit run recommender_app.py
    ```
 
 ### Code Organization
@@ -470,8 +478,8 @@ profile = {'avg_score': 85, 'study_hours_per_week': 25, 'motivation_level': 9}
 
 # Test feature engineering
 python -c "
-from lightfm_study_recommender import ContentBasedStudyRecommender
-rec = ContentBasedStudyRecommender()
+from recommender_app import ContentBasedStudyRecommender
+recommender = ContentBasedStudyRecommender()
 features = rec.engineer_features_for_academic_model(test_profile)
 print(f'Generated {features.shape[1]} features')  # Should be 58
 "
@@ -529,7 +537,7 @@ Error: Port 8501 is already in use
 # Kill existing Streamlit processes
 pkill -f streamlit
 # Or use different port
-streamlit run lightfm_study_recommender.py --server.port 8502
+streamlit run recommender_app.py --server.port 8502
 ```
 
 ### Debug Mode
@@ -646,10 +654,10 @@ COPY requirements_comprehensive.txt .
 RUN pip install -r requirements_comprehensive.txt
 COPY . .
 EXPOSE 8501
-CMD ["streamlit", "run", "lightfm_study_recommender.py"]
+CMD ["streamlit", "run", "recommender_app.py"]
 
 # Local Server
-streamlit run lightfm_study_recommender.py --server.port 80 --server.address 0.0.0.0
+streamlit run recommender_app.py --server.port 80 --server.address 0.0.0.0
 ```
 
 **Monitoring:**
@@ -674,7 +682,7 @@ streamlit run lightfm_study_recommender.py --server.port 80 --server.address 0.0
 
 ---
 
-**🚀 Ready to get started? Run `streamlit run lightfm_study_recommender.py` and experience the future of personalized education!**
+**🚀 Ready to get started? Run `streamlit run recommender_app.py` and experience the future of personalized education!**
 
 ---
 

@@ -10,7 +10,7 @@
                       │
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│         STREAMLIT INTERFACE (lightfm_study_recommender.py)       │
+│         STREAMLIT INTERFACE (recommender_app.py)       │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │  Sidebar: Student Profile Input Form                      │  │
 │  │  - Demographics (age, region, education)                 │  │
@@ -119,7 +119,7 @@
 ## Component Details
 
 ### 1. Input Layer (Student Interface)
-**File:** `lightfm_study_recommender.py`
+**File:** `recommender_app.py`
 **Purpose:** Collect comprehensive student profile data
 **Key Features:**
 - Demographic information (age, region, education, etc.)
@@ -128,7 +128,7 @@
 - Learning preferences and patterns
 
 ### 2. Feature Engineering Layer
-**File:** `lightfm_study_recommender.py` + `notebooks/Final.ipynb`
+**File:** `recommender_app.py` + `notebooks/Final.ipynb`
 **Functions:**
 - Calculates 58+ features from raw inputs
 - Combines engagement, performance, and behavioral metrics
@@ -157,7 +157,7 @@ learning_velocity = credits_earned / days_active
 **Accuracy:** ~90.8% on test data
 
 ### 4. Prediction & Recommendation Engine
-**File:** `lightfm_study_recommender.py`
+**File:** `recommender_app.py`
 **Components:**
 
 **A. Outcome Prediction**
@@ -193,7 +193,7 @@ insights = {
 ```
 
 ### 5. Display Layer
-**File:** `lightfm_study_recommender.py`
+**File:** `recommender_app.py`
 **Components:**
 - Student Profile Summary
 - Prediction Display (outcome + confidence)
@@ -283,7 +283,7 @@ Models:    Joblib persistence
 
 ```
 educationcare/
-├── lightfm_study_recommender.py  # Main Streamlit application
+├── recommender_app.py  # Main Streamlit application
 ├── notebooks/
 │   └── Final.ipynb                # Model training & feature engineering
 ├── data/                          # Source datasets (7 CSV files)

@@ -4,7 +4,7 @@
 
 ### ✅ Essential Models (4 files) - Used by Main App
 
-These models are **loaded and used** by `lightfm_study_recommender.py`:
+These models are **loaded and used** by `recommender_app.py`:
 
 1. **model.pkl** (848 KB)
    - Type: LightGBM Classifier
@@ -102,7 +102,7 @@ These models were deleted on Nov 5, 2025 to clean up redundancy:
 
 ---
 
-## Model Loading in lightfm_study_recommender.py
+## Model Loading in recommender_app.py
 
 The main app loads these models on startup:
 
@@ -210,7 +210,7 @@ print(f"Features: {model.n_features_}")
 
 3. **Test Main App:**
    ```bash
-   streamlit run lightfm_study_recommender.py
+   streamlit run recommender_app.py
    # App should load without errors
    ```
 

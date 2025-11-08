@@ -2,13 +2,13 @@
 
 ## Running the EducationCare Study Recommender
 
-Your main application is now **`lightfm_study_recommender.py`** (in the root folder) - a comprehensive ML-powered personalized study recommendation system.
+Your main application is now **`recommender_app.py`** (in the root folder) - a comprehensive ML-powered personalized study recommendation system.
 
 ### Quick Start
 
 ```bash
 cd /Users/jonathanlee/Documents/GitHub/educationcare
-streamlit run lightfm_study_recommender.py
+streamlit run recommender_app.py
 ```
 
 The app will open in your browser at `http://localhost:8501`
@@ -70,10 +70,13 @@ The following old files have been removed:
 
 ```
 educationcare/
-├── lightfm_study_recommender.py      ← MAIN APP ⭐
+├── recommender_app.py                ← MAIN APP ⭐
+├── lightfm_integration.py            ← LightFM collaborative filtering
+├── categorical_mapping_utils.py      ← Category encoding utilities
 ├── models/                           ← ML models
 ├── config/                           ← Configuration
 ├── data/                             ← Training data
+├── proficiency/                      ← English proficiency module
 ├── notebooks/                        ← Model training
 ├── scripts/                          ← Utilities
 └── docs/                             ← Documentation
@@ -88,7 +91,7 @@ educationcare/
 - Install dependencies: `pip install -r requirements.txt`
 
 **Port already in use?**
-- Stop other Streamlit apps or use: `streamlit run scripts/lightfm_study_recommender.py --server.port 8502`
+- Stop other Streamlit apps or use: `streamlit run scripts/recommender_app.py --server.port 8502`
 
 ## 📚 Documentation
 
