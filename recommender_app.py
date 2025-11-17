@@ -884,15 +884,25 @@ class ContentBasedStudyRecommender:
                 prediction = self.academic_model.predict(scaled_features)[0]
                 probabilities = self.academic_model.predict_proba(scaled_features)[0]
             
-            # Map prediction to outcome
-            target_classes = ['Pass', 'Fail', 'Distinction', 'Withdrawn']
-            outcome = target_classes[prediction] if prediction < len(target_classes) else 'Pass'
+            # Map prediction to binary outcome (Success/Failure)
+            # Binary classification: 0 = Success (Pass+Distinction), 1 = Failure (Fail+Withdrawn)
+            target_classes = ['Success', 'Failure']
+            outcome = target_classes[prediction] if prediction < len(target_classes) else 'Success'
+            
+            # Determine risk level based on prediction and confidence
+            if outcome == 'Failure':
+                risk_level = 'high'
+            elif probabilities[0] < 0.7:  # Success probability < 70%
+                risk_level = 'medium'
+            else:
+                risk_level = 'low'
             
             return {
                 'outcome': outcome,
                 'confidence': probabilities[prediction],
                 'probabilities': probabilities,
-                'risk_level': 'high' if outcome in ['Fail', 'Withdrawn'] else 'medium' if outcome == 'Pass' else 'low'
+                'success_probability': probabilities[0],  # Probability of Success
+                'risk_level': risk_level
             }
             
         except Exception as e:
@@ -1065,18 +1075,20 @@ class ContentBasedStudyRecommender:
             
             # ML-informed difficulty matching based on predicted performance
             avg_score = acad.get('avg_score', 50)
-            if predicted_outcome == 'Distinction':
-                # High performers can handle advanced content
+            success_probability = academic_pred.get('success_probability', 0.5)
+            
+            if predicted_outcome == 'Success' and success_probability > 0.8:
+                # High-confidence success: can handle advanced content
                 if resource['difficulty'] == 'Advanced':
                     score += 0.25 * confidence
                 elif resource['difficulty'] == 'Intermediate':
                     score += 0.15 * confidence
-            elif predicted_outcome in ['Fail', 'Withdrawn']:
+            elif predicted_outcome == 'Failure':
                 # At-risk students need beginner-friendly content
                 if resource['difficulty'] == 'Beginner':
                     score += 0.3 * confidence
-            else:  # Pass
-                # Average performers benefit from intermediate content
+            else:  # Success with lower confidence
+                # Moderate performers benefit from intermediate content
                 if resource['difficulty'] == 'Intermediate':
                     score += 0.2 * confidence
                 elif resource['difficulty'] == 'Beginner' and avg_score < 60:
@@ -1827,14 +1839,16 @@ def show_recommendations():
     
     with col2:
         st.markdown("**📊 Academic Success Prediction**")
-        outcome_color = {"Distinction": "🟢", "Pass": "🟡", "Fail": "🔴", "Withdrawn": "🔴"}
+        outcome_color = {"Success": "🟢", "Failure": "🔴"}
         outcome_emoji = outcome_color.get(academic_pred['outcome'], "🟡")
         
         # Enhanced prediction without exposing regional details to user
         demographic_info = user_profile.get('demographic_info', {})
+        success_prob = academic_pred.get('success_probability', 0.5)
         
         st.info(f"""
         **Predicted Outcome:** {outcome_emoji} {academic_pred['outcome']}  
+        **Success Probability:** {success_prob*100:.1f}%  
         **Confidence:** {academic_pred['confidence']*100:.1f}%  
         **Risk Level:** {academic_pred['risk_level'].title()}  
         **Recommendation:** {'Intensive Support Needed' if academic_pred['risk_level'] == 'high' else 'Targeted Support' if academic_pred['risk_level'] == 'medium' else 'Enhancement Focus'}
@@ -1881,11 +1895,14 @@ def show_recommendations():
     
     with col2:
         risk_color = {"high": "🔴", "medium": "🟡", "low": "🟢"}[academic_pred['risk_level']]
-        st.metric("Success Prediction", f"{outcome_emoji} {academic_pred['outcome']}")
+        success_prob = academic_pred.get('success_probability', 0.5)
+        st.metric("Success Prediction", f"{outcome_emoji} {academic_pred['outcome']}", 
+                 delta=f"{success_prob*100:.0f}% probability")
     
     with col3:
         # Show intervention priority instead of region to keep regional inference private
-        ml_priority_score = (2 - english_pred['level']) + (0 if academic_pred['outcome'] == 'Distinction' else 1 if academic_pred['outcome'] == 'Pass' else 2)
+        success_prob = academic_pred.get('success_probability', 0.5)
+        ml_priority_score = (2 - english_pred['level']) + (0 if success_prob > 0.8 else 1 if success_prob > 0.5 else 2)
         priority_level = "High" if ml_priority_score >= 3 else "Medium" if ml_priority_score >= 2 else "Low"
         st.metric("Intervention Priority", priority_level)
     
