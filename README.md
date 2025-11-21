@@ -88,7 +88,7 @@ graph TD
 
 ```bash
 Python 3.8+
-pip install -r requirements_comprehensive.txt
+pip install -r requirements.txt
 ```
 
 ### Running the Application
@@ -246,17 +246,6 @@ class ContentBasedStudyRecommender:
 
 ## 💻 User Journey
 
-### Session State Management
-
-The application uses Streamlit's session state to track user progress:
-
-```python
-st.session_state.step = 1/2/3              # Current step
-st.session_state.english_results = {...}   # Step 1 data
-st.session_state.academic_results = {...}  # Step 2 data
-st.session_state.recommender = {...}       # ML model instance
-```
-
 ### Navigation Flow
 
 ```
@@ -362,9 +351,7 @@ def get_recommendations(self, user_profile, top_k=6):
 ├── 🤝 lightfm_integration.py           # LightFM collaborative filtering
 ├── 🏷️ categorical_mapping_utils.py    # Category encoding utilities
 ├── 📋 requirements.txt                 # Core dependencies
-├── 📝 requirements_comprehensive.txt   # Extended dependencies
 ├── 📖 README.md                        # This file
-├── 📄 QUICK_START.md                   # Quick start guide
 │
 ├── 📁 data/                            # Training data (CSV files)
 │   ├── assessments.csv
@@ -390,14 +377,8 @@ def get_recommendations(self, user_profile, top_k=6):
 │   └── 📊 Final.ipynb                  # Model training & analysis
 │
 ├── 📁 scripts/                         # Utility scripts
-│   ├── � quick_start.py               # Setup helper
 │   └── 💾 save_model.py                # Model export utilities
 │
-├── � docs/                            # Documentation
-│   ├── ARCHITECTURE.md
-│   ├── FEATURES_EXPLAINED.md
-│   ├── PROJECT_SUMMARY.md
-│   └── SETUP_INSTRUCTIONS.md
 │
 └── � proficiency/                     # English proficiency model (external)
     ├── 🇬🇧 english_proficiency_model.pkl
@@ -429,7 +410,7 @@ def get_recommendations(self, user_profile, top_k=6):
 2. **Install Dependencies**
 
    ```bash
-   pip install -r requirements_comprehensive.txt
+   pip install -r requirements.txt
    ```
 
 3. **Generate Model Files** (if missing)
@@ -650,8 +631,8 @@ Dependencies:
 
 # Docker Deployment
 FROM python:3.9-slim
-COPY requirements_comprehensive.txt .
-RUN pip install -r requirements_comprehensive.txt
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 COPY . .
 EXPOSE 8501
 CMD ["streamlit", "run", "recommender_app.py"]
