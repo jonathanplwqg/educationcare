@@ -3,8 +3,7 @@ EducationCare - ML-Powered Personalized Study Recommender with LightFM-Next Inte
 
 A sophisticated recommendation system that integrates:
 1. Two trained ML models for prediction
-2. LightFM collaborative filtering for recommendations  
-3. Content-based filtering as fallback
+2. LightFM collaborative filtering for recommendations
 
 🧠 ML MODEL ARCHITECTURE + LightFM:
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -23,20 +22,19 @@ A sophisticated recommendation system that integrates:
 │ STEP 3: LightFM Collaborative Filtering → Enhanced Recommendations         │
 │ ├─ Input: User profiles + ML predictions                                    │
 │ ├─ Model: LightFM matrix factorization with WARP loss                      │
-│ └─ Output: Collaborative filtering recommendations + content-based fallback │
+│ └─ Output: Collaborative filtering recommendations                           │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 🎯 KEY INNOVATIONS: 
 - Smart Feature Engineering for ML models
 - LightFM-Next collaborative filtering integration
-- Hybrid recommendation approach with fallback
+- Hybrid recommendation approach
 - Synthetic user-item interaction generation
 
 🔄 ENHANCED INTEGRATION FLOW:
 Step 1 → English scores → predict_english_proficiency() → English ML model
 Step 2 → Academic profile → predict_academic_success() → Academic ML model  
 Step 3 → Combined predictions → LightFM collaborative filtering → Enhanced recommendations
-Step 4 → Fallback to content-based filtering if needed
 
 Designed for maximum usability with state-of-the-art recommendation technology.
 """
@@ -1054,147 +1052,6 @@ class ContentBasedStudyRecommender:
             print(f"⚠️ LightFM initialization failed: {e}")
             self.lightfm_recommender = None
 
-    def calculate_compatibility_scores(self, user_profile):
-        """Calculate compatibility scores between user and resources using content-based filtering"""
-        
-        # Get user feature vector
-        user_features = self.create_user_feature_vector(user_profile)
-        
-        # Get resource feature matrix
-        resource_features, resource_ids = self.create_resource_feature_matrix()
-        
-        # Calculate rule-based scores for each resource
-        scores = []
-        
-        for i, (resource_id, resource) in enumerate(self.study_resources.items()):
-            score = self._calculate_resource_score(user_profile, resource)
-            scores.append(score)
-        
-        return np.array(scores), resource_ids
-    
-    def _calculate_resource_score(self, user_profile, resource):
-        """Calculate recommendation score using ML predictions + content matching"""
-        
-        score = 0.4  # Base score
-        
-        # 🧠 ML-POWERED ENGLISH PROFICIENCY MATCHING
-        if 'english_scores' in user_profile:
-            english_pred = self.predict_english_proficiency(user_profile['english_scores'])
-            eng_level = english_pred['level']  # 0=Low, 1=Medium, 2=High
-            eng_confidence = english_pred['confidence']
-            
-            # Match English resources to proficiency level
-            if resource['type'].startswith('English'):
-                if eng_level == 0 and resource['difficulty'] == 'Beginner':
-                    score += 0.4 * eng_confidence  # High need for basic resources
-                elif eng_level == 1 and resource['difficulty'] == 'Intermediate':
-                    score += 0.3 * eng_confidence  # Medium need for intermediate
-                elif eng_level == 2 and resource['difficulty'] == 'Advanced':
-                    score += 0.2 * eng_confidence  # Low need for advanced (already proficient)
-                
-                # Skill-specific targeting based on individual scores
-                eng_scores = user_profile['english_scores']
-                if 'vocab_focus' in resource.get('features', []):
-                    vocab_need = max(0, 0.8 - eng_scores.get('Vocabulary', 0.5))  # Need if below 80%
-                    score += vocab_need * 0.3
-                
-                if 'grammar_focus' in resource.get('features', []):
-                    grammar_need = max(0, 0.8 - eng_scores.get('Grammar', 0.5))
-                    score += grammar_need * 0.3
-                    
-                if 'reading_focus' in resource.get('features', []):
-                    reading_need = max(0, 0.8 - eng_scores.get('Reading', 0.5))
-                    score += reading_need * 0.25
-                    
-                if 'writing_focus' in resource.get('features', []):
-                    writing_need = max(0, 0.8 - eng_scores.get('Writing', 0.5))
-                    score += writing_need * 0.25
-        
-        # 🧠 ML-POWERED ACADEMIC SUCCESS MATCHING  
-        if 'academic_profile' in user_profile:
-            academic_pred = self.predict_academic_success(user_profile)
-            predicted_outcome = academic_pred['outcome']
-            risk_level = academic_pred['risk_level']
-            confidence = academic_pred['confidence']
-            
-            # Match resources to predicted academic needs
-            if predicted_outcome in ['Fail', 'Withdrawn'] or risk_level == 'high':
-                # High-risk students need intensive support
-                if 'intensive_support' in resource.get('features', []):
-                    score += 0.5 * confidence
-                if 'motivation' in resource.get('features', []):
-                    score += 0.4 * confidence
-                if 'confidence' in resource.get('features', []):
-                    score += 0.4 * confidence
-                    
-            elif predicted_outcome == 'Pass' and risk_level == 'medium':
-                # Medium-risk students need targeted support
-                if 'time_management' in resource.get('features', []):
-                    score += 0.3 * confidence
-                if 'study_skills' in resource.get('features', []):
-                    score += 0.3 * confidence
-                    
-            elif predicted_outcome == 'Distinction' and risk_level == 'low':
-                # High-performers can benefit from advanced resources
-                if resource['difficulty'] == 'Advanced':
-                    score += 0.2 * confidence
-                if 'leadership' in resource.get('features', []):
-                    score += 0.2 * confidence
-            
-            # Specific behavioral interventions based on user data
-            acad = user_profile['academic_profile']
-            
-            # Time management for poor timeliness (ML-informed)
-            if acad.get('submission_timeliness', 0) > 2 and 'time_management' in resource.get('features', []):
-                urgency_score = min(0.4, acad.get('submission_timeliness', 0) * 0.1)
-                score += urgency_score * confidence
-            
-            # ML-informed confidence and motivation interventions
-            if acad.get('confidence_level', 5) < 5 and 'confidence' in resource.get('features', []):
-                confidence_need = (5 - acad.get('confidence_level', 5)) / 5  # 0-1 scale
-                score += 0.3 * confidence_need * confidence
-            
-            if acad.get('motivation_level', 5) < 5 and 'motivation' in resource.get('features', []):
-                motivation_need = (5 - acad.get('motivation_level', 5)) / 5  # 0-1 scale  
-                score += 0.3 * motivation_need * confidence
-            
-            # ML-informed difficulty matching based on predicted performance
-            avg_score = acad.get('avg_score', 50)
-            success_probability = academic_pred.get('success_probability', 0.5)
-            
-            if predicted_outcome == 'Success' and success_probability > 0.8:
-                # High-confidence success: can handle advanced content
-                if resource['difficulty'] == 'Advanced':
-                    score += 0.25 * confidence
-                elif resource['difficulty'] == 'Intermediate':
-                    score += 0.15 * confidence
-            elif predicted_outcome == 'Failure':
-                # At-risk students need beginner-friendly content
-                if resource['difficulty'] == 'Beginner':
-                    score += 0.3 * confidence
-            else:  # Success with lower confidence
-                # Moderate performers benefit from intermediate content
-                if resource['difficulty'] == 'Intermediate':
-                    score += 0.2 * confidence
-                elif resource['difficulty'] == 'Beginner' and avg_score < 60:
-                    score += 0.2 * confidence
-        
-        # 🎯 ML-Enhanced Resource Effectiveness Bonus
-        # Weight effectiveness by ML confidence - more confident predictions get higher weight
-        ml_confidence_boost = 1.0
-        if 'english_scores' in user_profile and 'academic_profile' in user_profile:
-            english_pred = self.predict_english_proficiency(user_profile['english_scores'])
-            academic_pred = self.predict_academic_success(user_profile) 
-            ml_confidence_boost = (english_pred['confidence'] + academic_pred['confidence']) / 2
-        
-        score += resource['effectiveness_score'] * 0.15 * ml_confidence_boost
-        
-        # 📊 Final ML-Powered Score Normalization
-        # Normalize to 0-1 range with ML confidence weighting
-        normalized_score = min(1.0, max(0.0, score))
-        
-        return normalized_score
-    
     def _generate_synthetic_interactions(self, user_profiles):
         """Generate synthetic interactions based on user profiles"""
         interactions = []
@@ -1255,95 +1112,29 @@ class ContentBasedStudyRecommender:
         return interactions
     
     def get_recommendations(self, user_profile, top_k=5):
-        """Get personalized recommendations for a user"""
+        """Get personalized recommendations for a user using LightFM collaborative filtering"""
         
-        # 🎯 ENHANCED: Try LightFM recommendations first
-        if hasattr(self, 'lightfm_recommender') and self.lightfm_recommender:
-            try:
-                existing_models = {
-                    'english_model': self,
-                    'academic_model': self
-                }
-                
-                lightfm_recs = self.lightfm_recommender.get_lightfm_recommendations(
-                    user_profile, existing_models, top_k
-                )
-                
-                if lightfm_recs:
-                    print("✅ Using LightFM recommendations")
-                    return lightfm_recs
-                    
-            except Exception as e:
-                print(f"⚠️ LightFM failed, fallback to rules: {e}")
+        # Use LightFM recommendations only
+        if not (hasattr(self, 'lightfm_recommender') and self.lightfm_recommender):
+            raise ValueError("LightFM recommender not available")
+            
+        existing_models = {
+            'english_model': self,
+            'academic_model': self
+        }
         
-        # 🔄 FALLBACK: Original rule-based recommendations
+        lightfm_recs = self.lightfm_recommender.get_lightfm_recommendations(
+            user_profile, existing_models, top_k
+        )
         
-        # Calculate compatibility scores
-        scores, resource_ids = self.calculate_compatibility_scores(user_profile)
-        
-        # Get top recommendations
-        top_indices = np.argsort(-scores)[:top_k]
-        
-        recommendations = []
-        for idx in top_indices:
-            resource_id = resource_ids[idx]
-            resource = self.study_resources[resource_id]
-            recommendations.append({
-                'id': resource_id,
-                'score': float(scores[idx]),
-                'resource': resource,
-                'relevance_explanation': self._explain_recommendation(user_profile, resource)
-            })
-        
-        return recommendations
+        if not lightfm_recs:
+            raise ValueError("LightFM failed to generate recommendations")
+            
+        print("✅ Using LightFM recommendations")
+        return lightfm_recs
     
 
     
-    def _explain_recommendation(self, user_profile, resource):
-        """Generate explanation for why this resource was recommended"""
-        explanations = []
-        
-        # English-based explanations
-        if 'english_scores' in user_profile:
-            eng_scores = user_profile['english_scores']
-            
-            if 'vocab_focus' in resource.get('features', []):
-                if eng_scores.get('Vocabulary', 0) < 0.6:
-                    explanations.append("Your vocabulary score indicates room for improvement")
-            
-            if 'grammar_focus' in resource.get('features', []):
-                if eng_scores.get('Grammar', 0) < 0.6:
-                    explanations.append("Your grammar assessment suggests this will help")
-            
-            if 'reading_focus' in resource.get('features', []):
-                if eng_scores.get('Reading', 0) < 0.7:
-                    explanations.append("Based on your reading comprehension results")
-            
-            if 'writing_focus' in resource.get('features', []):
-                if eng_scores.get('Writing', 0) < 0.6:
-                    explanations.append("Your writing skills assessment indicates this need")
-        
-        # Academic behavior explanations
-        if 'academic_profile' in user_profile:
-            acad = user_profile['academic_profile']
-            
-            if 'time_management' in resource.get('features', []):
-                if acad.get('submission_timeliness', 0) > 2:
-                    explanations.append("Your assignment submission patterns suggest timing challenges")
-            
-            if 'intensive_support' in resource.get('features', []):
-                if acad.get('risk_level') == 'high':
-                    explanations.append("Your academic profile indicates need for additional support")
-            
-            if 'motivation' in resource.get('features', []):
-                if acad.get('engagement_consistency', 0.5) < 0.3:
-                    explanations.append("Your engagement patterns suggest motivational support would help")
-        
-        if not explanations:
-            explanations.append("This resource matches your learning profile")
-        
-        return "; ".join(explanations)
-
 
 def create_user_interface():
     """Create the main user interface"""
