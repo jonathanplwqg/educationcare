@@ -86,6 +86,17 @@ graph TD
 
 ### Prerequisites
 
+**For Windows Users:**
+Before installing Python dependencies, you need Microsoft C++ Build Tools for packages that require compilation (like `lightfm-next`):
+
+1. Download [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+2. Run the installer and select "Desktop development with C++"
+3. Complete the installation (requires ~6GB of space)
+
+**For macOS/Linux Users:**
+No additional tools needed - your system already has the necessary compilers.
+
+**Python Setup:**
 ```bash
 Python 3.8+
 pip install -r requirements.txt
