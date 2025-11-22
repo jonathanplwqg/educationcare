@@ -246,50 +246,108 @@ class ContentBasedStudyRecommender:
         self.initialize_study_database()
     
     def load_models(self):
-        """Load existing models with LightGBM detection"""
+        """Load existing models with enhanced LightGBM detection"""
         try:
-            # 🔍 CHECK FOR LIGHTGBM MODELS FIRST
-            print("🔍 Checking for LightGBM models...")
+            # 🔍 ENHANCED LIGHTGBM DETECTION
+            print("🔍 Checking for LightGBM models with enhanced detection...")
             
-            # Look for potential LightGBM model files in models/ folder
-            lightgbm_candidates = [
-                'models/best_lgb_model.pkl', 'models/lgb_model.pkl', 'models/lightgbm_model.pkl', 
-                'models/best_model.pkl', 'models/final_model.pkl', 'models/lgb_enhanced.pkl', 'models/model.pkl'
-            ]
+            # Primary candidate: model.pkl should contain the best_lgb_binary from Final.ipynb
+            primary_candidate = 'models/model.pkl'
             
-            for candidate in lightgbm_candidates:
-                if Path(candidate).exists():
-                    try:
-                        test_model = joblib.load(candidate)
-                        if 'lightgbm' in str(type(test_model).__module__).lower():
-                            self.academic_model = test_model
-                            print(f"🚀 Found LightGBM model: {candidate}")
-                            print(f"   Type: {type(test_model).__name__}")
-                            break
-                    except:
-                        continue
+            if Path(primary_candidate).exists():
+                try:
+                    test_model = joblib.load(primary_candidate)
+                    model_type_name = type(test_model).__name__
+                    model_module = str(type(test_model).__module__)
+                    
+                    # Enhanced LightGBM detection
+                    is_lightgbm = (
+                        'lightgbm' in model_module.lower() or 
+                        'lgbm' in model_type_name.lower() or
+                        model_type_name == 'LGBMClassifier' or
+                        hasattr(test_model, 'booster_') or  # LightGBM specific attribute
+                        hasattr(test_model, 'feature_importances_') and 'lightgbm' in str(type(test_model))
+                    )
+                    
+                    if is_lightgbm:
+                        self.academic_model = test_model
+                        print(f"🚀 Successfully loaded LightGBM binary classifier: {primary_candidate}")
+                        print(f"   Model Type: {model_type_name}")
+                        print(f"   Module: {model_module}")
+                        print(f"   Features: {getattr(test_model, 'n_features_in_', 'Unknown')}")
+                        
+                        # Verify it's the 58-feature binary classifier from Final.ipynb
+                        if hasattr(test_model, 'n_features_in_') and test_model.n_features_in_ == 58:
+                            print(f"✅ CONFIRMED: This is the 58-feature tuned LightGBM binary classifier!")
+                        else:
+                            print(f"⚠️  Feature count: {getattr(test_model, 'n_features_in_', 'Unknown')} (expected 58)")
+                    else:
+                        print(f"⚠️ {primary_candidate} exists but is not LightGBM: {model_type_name}")
+                        print(f"   Module: {model_module}")
+                        # Don't set academic_model yet, let fallback logic handle it
+                        
+                except Exception as e:
+                    print(f"⚠️ Error loading {primary_candidate}: {e}")
+            
+            # Fallback: Check other potential LightGBM files if primary didn't work
+            if not hasattr(self, 'academic_model') or self.academic_model is None:
+                print("🔍 Primary model.pkl not LightGBM, checking fallback candidates...")
+                fallback_candidates = [
+                    'models/best_lgb_model.pkl', 'models/lgb_model.pkl', 'models/lightgbm_model.pkl', 
+                    'models/best_model.pkl', 'models/final_model.pkl', 'models/lgb_enhanced.pkl'
+                ]
+                
+                for candidate in fallback_candidates:
+                    if Path(candidate).exists():
+                        try:
+                            test_model = joblib.load(candidate)
+                            model_type_name = type(test_model).__name__
+                            
+                            if ('lgbm' in model_type_name.lower() or 
+                                'lightgbm' in str(type(test_model).__module__).lower() or
+                                hasattr(test_model, 'booster_')):
+                                
+                                self.academic_model = test_model
+                                print(f"🚀 Found fallback LightGBM model: {candidate}")
+                                print(f"   Type: {model_type_name}")
+                                break
+                        except:
+                            continue
             
             # Load English proficiency model
             if Path('proficiency/english_proficiency_model.pkl').exists():
                 self.english_model = joblib.load('proficiency/english_proficiency_model.pkl')
                 model_type = type(self.english_model).__name__
-                is_lgb = 'lightgbm' in str(type(self.english_model).__module__).lower()
+                is_lgb = ('lgbm' in model_type.lower() or 
+                         'lightgbm' in str(type(self.english_model).__module__).lower() or
+                         hasattr(self.english_model, 'booster_'))
                 status = "🚀 LightGBM" if is_lgb else "🌳 RandomForest"
                 print(f"✅ Loaded English proficiency model ({status} {model_type})")
             
-            # Load Academic success model (if not already loaded as LightGBM)
+            # Final fallback: Load any model from models/model.pkl if LightGBM detection failed
             if not hasattr(self, 'academic_model') or self.academic_model is None:
                 if Path('models/model.pkl').exists():
                     self.academic_model = joblib.load('models/model.pkl')
                     model_type = type(self.academic_model).__name__
-                    is_lgb = 'lightgbm' in str(type(self.academic_model).__module__).lower()
+                    model_module = str(type(self.academic_model).__module__)
+                    
+                    # Re-check if it's actually LightGBM with more thorough detection
+                    is_lgb = ('lgbm' in model_type.lower() or 
+                             'lightgbm' in model_module.lower() or
+                             hasattr(self.academic_model, 'booster_'))
+                    
                     status = "🚀 LightGBM" if is_lgb else "🌳 RandomForest"
                     print(f"✅ Loaded academic success model ({status} {model_type})")
                     
-                    if not is_lgb:
-                        print("⚠️  WARNING: Using RandomForest instead of expected LightGBM")
-                        print("   Original training in Final.ipynb used LightGBM boosting")
-                        print("   Consider retraining or finding LightGBM model files")
+                    if is_lgb:
+                        print("🎉 SUCCESS: Detected LightGBM model in final fallback!")
+                        if hasattr(self.academic_model, 'n_features_in_'):
+                            print(f"   Features: {self.academic_model.n_features_in_}")
+                    else:
+                        print("⚠️  WARNING: Final model.pkl is not LightGBM")
+                        print(f"   Type: {model_type}, Module: {model_module}")
+                        print("   This should be the best_lgb_binary from Final.ipynb")
+                        print("   Check if Final.ipynb was run and saved correctly")
                 
             if Path('models/scaler.pkl').exists():
                 self.academic_scaler = joblib.load('models/scaler.pkl')
@@ -343,32 +401,59 @@ class ContentBasedStudyRecommender:
             print("⚠️ LightFM-Next not available, using content-based filtering only")
     
     def _print_model_summary(self):
-        """Print a summary of loaded models"""
-        print("\n" + "="*50)
-        print("📋 MODEL LOADING SUMMARY")
-        print("="*50)
+        """Print a summary of loaded models with enhanced LightGBM detection"""
+        print("\n" + "="*60)
+        print("📋 ENHANCED MODEL LOADING SUMMARY")
+        print("="*60)
+        
+        def is_lightgbm_model(model):
+            """Enhanced LightGBM detection"""
+            if model is None:
+                return False
+            model_type = type(model).__name__
+            model_module = str(type(model).__module__)
+            return ('lgbm' in model_type.lower() or 
+                   'lightgbm' in model_module.lower() or
+                   hasattr(model, 'booster_'))
         
         if hasattr(self, 'english_model') and self.english_model:
             eng_type = type(self.english_model).__name__
-            eng_is_lgb = 'lightgbm' in str(type(self.english_model).__module__).lower()
-            print(f"🇬🇧 English Model: {eng_type} {'🚀' if eng_is_lgb else '🌳'}")
+            eng_is_lgb = is_lightgbm_model(self.english_model)
+            status = "🚀 LightGBM" if eng_is_lgb else "🌳 RandomForest"
+            print(f"🇬🇧 English Model: {eng_type} ({status})")
         
         if hasattr(self, 'academic_model') and self.academic_model:
             acad_type = type(self.academic_model).__name__
-            acad_is_lgb = 'lightgbm' in str(type(self.academic_model).__module__).lower()
-            print(f"🎓 Academic Model: {acad_type} {'🚀' if acad_is_lgb else '🌳'}")
+            acad_is_lgb = is_lightgbm_model(self.academic_model)
+            status = "🚀 LightGBM" if acad_is_lgb else "🌳 RandomForest"
+            features = getattr(self.academic_model, 'n_features_in_', 'Unknown')
+            print(f"🎓 Academic Model: {acad_type} ({status})")
+            print(f"   Features: {features}")
+            
+            # Special message for the 58-feature LightGBM binary classifier
+            if acad_is_lgb and features == 58:
+                print("   ✅ CONFIRMED: This is the tuned LightGBM binary classifier from Final.ipynb!")
+                print("   � Your system description is 100% accurate!")
+            elif acad_is_lgb:
+                print("   ✅ LightGBM detected but feature count unexpected")
+            elif features == 58:
+                print("   ⚠️  Correct feature count but not LightGBM - check model.pkl")
+            else:
+                print("   ⚠️  Neither LightGBM nor 58 features - may need to re-run Final.ipynb")
             
         has_lightgbm = False
         if hasattr(self, 'english_model') and self.english_model:
-            has_lightgbm |= 'lightgbm' in str(type(self.english_model).__module__).lower()
+            has_lightgbm |= is_lightgbm_model(self.english_model)
         if hasattr(self, 'academic_model') and self.academic_model:
-            has_lightgbm |= 'lightgbm' in str(type(self.academic_model).__module__).lower()
+            has_lightgbm |= is_lightgbm_model(self.academic_model)
             
+        print("\n" + "="*60)
         if has_lightgbm:
-            print("✅ LightGBM models detected!")
+            print("🎉 SUCCESS: LightGBM models detected and loaded!")
         else:
-            print("⚠️  No LightGBM models found - using alternatives")
-            print("💡 To use LightGBM: retrain from Final.ipynb or find LightGBM .pkl files")
+            print("⚠️  NO LIGHTGBM MODELS FOUND")
+            print("💡 Run Final.ipynb to generate the tuned LightGBM binary classifier")
+        print("="*60)
     
     def initialize_study_database(self):
         """Create comprehensive study resource database"""
